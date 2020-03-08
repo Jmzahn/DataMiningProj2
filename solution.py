@@ -111,10 +111,44 @@ XTest = churnTest.drop('Churn',axis=1)
 toDrop = ['State', 'Phone', 'Intl Plan', 'VMail Plan', 'Old Churn']
 #I plan to readd 'Intl Plan', 'VMail Plan', 'Old Churn' as dummy vals
 
+intlPlan = X['Intl Plan'].to_numpy()
+vMailPlan = X['VMail Plan'].to_numpy()
+oldChurn = X['Old Churn'].to_numpy()
+#create dummy vals from categorical train data
+(intlPlanCat, intlPlanCatDict) = stattools.categorical(intlPlan, drop=True, dictnames=True)
+(vMailPlanCat, vMailPlanCatDict) = stattools.categorical(vMailPlan, drop=True, dictnames=True)
+(oldChurnCat, oldChurnCatDict) = stattools.categorical(oldChurn, drop=True, dictnames=True)
 
+intlPlanCatPD = pd.DataFrame(intlPlanCat,columns=['intlPlanNo','intlPlanYes'])
+vMailPlanCatPD = pd.DataFrame(vMailPlanCat,columns=['vMailPlanNo','vMailPlanYes'])
+oldChurnCatPD = pd.DataFrame(oldChurnCat,columns=['oldChurnFalse','oldChurnTrue'])
 
+intlPlanTest = XTest['Intl Plan'].to_numpy()
+vMailPlanTest = XTest['VMail Plan'].to_numpy()
+oldChurnTest = XTest['Old Churn'].to_numpy()
+#create dummy vals from categorical test data
+(intlPlanTestCat, intlPlanTestCatDict) = stattools.categorical(intlPlanTest, drop=True, dictnames=True)
+(vMailPlanTestCat, vMailPlanTestCatDict) = stattools.categorical(vMailPlanTest, drop=True, dictnames=True)
+(oldChurnTestCat, oldChurnTestCatDict) = stattools.categorical(oldChurnTest, drop=True, dictnames=True)
+
+intlPlanTestCatPD = pd.DataFrame(intlPlanTestCat,columns=['intlPlanNo','intlPlanYes'])
+vMailPlanTestCatPD = pd.DataFrame(vMailPlanTestCat,columns=['vMailPlanNo','vMailPlanYes'])
+oldChurnTestCatPD = pd.DataFrame(oldChurnTestCat,columns=['oldChurnFalse','oldChurnTrue'])
+
+#drop categorical vals from train and test data
 X.drop(toDrop, axis=1, inplace=True)
 XTest.drop(toDrop, axis=1, inplace=True)
+
+#now to add them back to the train and test data
+X.append(intlPlanCatPD, ignore_index=True)
+X.append(vMailPlanCatPD, ignore_index=True)
+X.append(oldChurnCatPD, ignore_index=True)
+XTest.append(intlPlanTestCatPD, ignore_index=True)
+XTest.append(vMailPlanTestCatPD, ignore_index=True)
+XTest.append(oldChurnTestCatPD, ignore_index=True)
+
+
+
 xNames = X.columns.values
 yNames = ['True','False']
 
