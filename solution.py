@@ -100,7 +100,8 @@ yTest = churnTest['Churn'].to_numpy()
 X = churnTrainRebal.drop('Churn',axis=1)
 XTest = churnTest.drop('Churn',axis=1)
 #drop all categorical cols so we can replace them with dummy vals if we want
-toDrop = ['State', 'Phone', 'Intl Plan', 'VMail Plan','Old Churn']
+toDrop = ['State', 'Phone', 'Intl Plan', 'VMail Plan', 'Old Churn']
+#I plan to readd 'Intl Plan', 'VMail Plan', 'Old Churn' as dummy vals
 X.drop(toDrop, axis=1, inplace=True)
 XTest.drop(toDrop, axis=1, inplace=True)
 xNames = X.columns.values
@@ -131,3 +132,25 @@ print('Accuracy: ',accuracy_score(yTest,predCart03))
 #   whatever predictor variables you think  appropriate. Try at least 3 different models.
 #   Compare the confusion tables and accuracies of the 3 different models.
 #   How does C5.0 compare in performance to CART? 
+
+c50_01 = DecisionTreeClassifier(criterion="entropy",max_leaf_nodes=2).fit(X,y)
+export_graphviz(cart01, out_file='c50_01.dot', feature_names=xNames, class_names=yNames)
+c50_02 = DecisionTreeClassifier(criterion="entropy",max_leaf_nodes=5).fit(X,y)
+export_graphviz(cart02, out_file='c50_02.dot', feature_names=xNames, class_names=yNames)
+c50_03 = DecisionTreeClassifier(criterion="entropy",max_leaf_nodes=10).fit(X,y)
+export_graphviz(cart02, out_file='c50_03.dot', feature_names=xNames, class_names=yNames)
+#only difference is max_leaf_nodes
+#lets collect our predictions
+predc50_01 = c50_01.predict(XTest)
+predc50_02 = c50_02.predict(XTest)
+predc50_03 = c50_03.predict(XTest)
+cm01 = confusion_matrix(yTest,predc50_01)
+cm02 = confusion_matrix(yTest,predc50_02)
+cm03 = confusion_matrix(yTest,predc50_03)
+print('\nConfusion matrices and accuracies')
+print('cm01:\n',cm01)
+print('Accuracy: ',accuracy_score(yTest,predc50_01))
+print('cm02:\n',cm02)
+print('Accuracy: ',accuracy_score(yTest,predc50_02))
+print('cm03:\n',cm03)
+print('Accuracy: ',accuracy_score(yTest,predc50_03))
