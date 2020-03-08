@@ -140,12 +140,12 @@ X.drop(toDrop, axis=1, inplace=True)
 XTest.drop(toDrop, axis=1, inplace=True)
 
 #now to add them back to the train and test data
-X.append(intlPlanCatPD, ignore_index=True)
-X.append(vMailPlanCatPD, ignore_index=True)
-X.append(oldChurnCatPD, ignore_index=True)
-XTest.append(intlPlanTestCatPD, ignore_index=True)
-XTest.append(vMailPlanTestCatPD, ignore_index=True)
-XTest.append(oldChurnTestCatPD, ignore_index=True)
+X.append(intlPlanCatPD, ignore_index=True, sort=False)
+X.append(vMailPlanCatPD, ignore_index=True, sort=False)
+X.append(oldChurnCatPD, ignore_index=True, sort=False)
+XTest.append(intlPlanTestCatPD, ignore_index=True, sort=False)
+XTest.append(vMailPlanTestCatPD, ignore_index=True, sort=False)
+XTest.append(oldChurnTestCatPD, ignore_index=True, sort=False)
 
 
 
