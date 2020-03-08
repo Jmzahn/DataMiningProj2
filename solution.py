@@ -42,6 +42,8 @@ churnTrain, churnTest = train_test_split(churn, test_size = 0.33, random_state =
 print('churn Shape: ',churn.shape)
 print('churnTrain Shape: ',churnTrain.shape)
 print('churnTest Shape: ',churnTest.shape)
+
+#create bar graph
 y=churn.shape[0]
 plt.barh(y,churnTrain.shape[0],color='b', alpha=0.60)
 plt.barh(y,churnTest.shape[0],left=churnTrain.shape[0],color='r', alpha=0.60)
@@ -50,11 +52,14 @@ plt.yticks([])
 plt.xlabel('Number of samples')
 plt.show()
 
+#perform t-test
 ttest, pval1 = ttest_ind(churnTrain['Day Mins'], churnTest['Day Mins'])
 if pval1<0.05:
     print("reject null hypothesis")
 else:
     print("accept null hypothesis")
+
+#perform z-test
 ztest, pval2 = stests.ztest(churnTrain['Churn'], x2=churnTest['Churn'], value=0,alternative='two-sided')
 if pval2<0.05:
     print("reject null hypothesis")
@@ -63,11 +68,14 @@ else:
 
 #Our t-test indicated we should reject the null hypothesis so lets resplit
 churnTrain, churnTest = train_test_split(churn, test_size = 0.33)
+#perform t-test
 ttest, pval1 = ttest_ind(churnTrain['Day Mins'], churnTest['Day Mins'])
 if pval1<0.05:
     print("reject null hypothesis")
 else:
     print("accept null hypothesis")
+
+#perform z-test
 ztest, pval2 = stests.ztest(churnTrain['Churn'], x2=churnTest['Churn'], value=0,alternative='two-sided')
 if pval2<0.05:
     print("reject null hypothesis")
@@ -102,10 +110,15 @@ XTest = churnTest.drop('Churn',axis=1)
 #drop all categorical cols so we can replace them with dummy vals if we want
 toDrop = ['State', 'Phone', 'Intl Plan', 'VMail Plan', 'Old Churn']
 #I plan to readd 'Intl Plan', 'VMail Plan', 'Old Churn' as dummy vals
+
+
+
 X.drop(toDrop, axis=1, inplace=True)
 XTest.drop(toDrop, axis=1, inplace=True)
 xNames = X.columns.values
 yNames = ['True','False']
+
+#create cart models and export their graphs
 cart01 = DecisionTreeClassifier(criterion="gini",max_leaf_nodes=2).fit(X,y)
 export_graphviz(cart01, out_file='cart01.dot', feature_names=xNames, class_names=yNames)
 cart02 = DecisionTreeClassifier(criterion="gini",max_leaf_nodes=5).fit(X,y)
@@ -113,10 +126,12 @@ export_graphviz(cart02, out_file='cart02.dot', feature_names=xNames, class_names
 cart03 = DecisionTreeClassifier(criterion="gini",max_leaf_nodes=10).fit(X,y)
 export_graphviz(cart02, out_file='cart03.dot', feature_names=xNames, class_names=yNames)
 #only difference is max_leaf_nodes
+
 #lets collect our predictions
 predCart01 = cart01.predict(XTest)
 predCart02 = cart02.predict(XTest)
 predCart03 = cart03.predict(XTest)
+#now lets make confusion matrices and accs
 cm01 = confusion_matrix(yTest,predCart01)
 cm02 = confusion_matrix(yTest,predCart02)
 cm03 = confusion_matrix(yTest,predCart03)
@@ -133,6 +148,7 @@ print('Accuracy: ',accuracy_score(yTest,predCart03))
 #   Compare the confusion tables and accuracies of the 3 different models.
 #   How does C5.0 compare in performance to CART? 
 
+#create C5.0 models and export their graphs
 c50_01 = DecisionTreeClassifier(criterion="entropy",max_leaf_nodes=2).fit(X,y)
 export_graphviz(cart01, out_file='c50_01.dot', feature_names=xNames, class_names=yNames)
 c50_02 = DecisionTreeClassifier(criterion="entropy",max_leaf_nodes=5).fit(X,y)
@@ -140,10 +156,12 @@ export_graphviz(cart02, out_file='c50_02.dot', feature_names=xNames, class_names
 c50_03 = DecisionTreeClassifier(criterion="entropy",max_leaf_nodes=10).fit(X,y)
 export_graphviz(cart02, out_file='c50_03.dot', feature_names=xNames, class_names=yNames)
 #only difference is max_leaf_nodes
+
 #lets collect our predictions
 predc50_01 = c50_01.predict(XTest)
 predc50_02 = c50_02.predict(XTest)
 predc50_03 = c50_03.predict(XTest)
+#now lets make confusion matrices and accs
 cm01 = confusion_matrix(yTest,predc50_01)
 cm02 = confusion_matrix(yTest,predc50_02)
 cm03 = confusion_matrix(yTest,predc50_03)
