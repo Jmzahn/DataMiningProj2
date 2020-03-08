@@ -1,0 +1,8 @@
+digraph Tree {
+node [shape=box] ;
+0 [label="CustServ Calls <= 3.5\ngini = 0.32\nsamples = 2387\nvalue = [1910, 477]\nclass = True"] ;
+1 [label="gini = 0.258\nsamples = 2152\nvalue = [1825, 327]\nclass = True"] ;
+0 -> 1 [labeldistance=2.5, labelangle=45, headlabel="True"] ;
+2 [label="gini = 0.462\nsamples = 235\nvalue = [85, 150]\nclass = False"] ;
+0 -> 2 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
+}
