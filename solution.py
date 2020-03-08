@@ -6,6 +6,7 @@ from scipy.stats import ttest_ind
 from statsmodels.stats import weightstats as stests
 import statsmodels.tools.tools as stattools
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
+from sklearn.metrics import confusion_matrix, accuracy_score
 np.random.seed(12345678)
 
 print('Loading churn...')
@@ -22,9 +23,9 @@ print(churn['Churn'].value_counts())
 
 #now lets grab the numbers
 numFalse, numTrue = churn['Churn'].value_counts()
-x = (0.20*(numFalse+numTrue)-numTrue)/0.80
-print('Number of values needed to be resampled: ',x)
-print('This would result in ',(x+numTrue),' True values, which would be ',(100*((x+numTrue)/(x+numTrue+numFalse))),'%')
+numToResample = (0.20*(numFalse+numTrue)-numTrue)/0.80
+print('Number of values needed to be resampled: ',numToResample)
+print('This would result in ',(numToResample+numTrue),' True values, which would be ',(100*((numToResample+numTrue)/(numToResample+numTrue+numFalse))),'%')
 print('Obviusly we cant resample a half of a sample so we either round up or down.')
 
 
@@ -79,13 +80,13 @@ else:
 print(churnTrain['Churn'].value_counts())
 numFalse, numTrue = churnTrain['Churn'].value_counts()
 #calculate x
-x = (0.20*(numFalse+numTrue)-numTrue)/0.80
-print('Number of values needed to be resampled: ',x)
-print('This would result in ',(x+numTrue),' True values, which would be ',(100*((x+numTrue)/(x+numTrue+numFalse))),'%')
+numToResample = (0.20*(numFalse+numTrue)-numTrue)/0.80
+print('Number of values needed to be resampled: ',numToResample)
+print('This would result in ',(numToResample+numTrue),' True values, which would be ',(100*((numToResample+numTrue)/(numToResample+numTrue+numFalse))),'%')
 print('Obviusly we cant resample a half of a sample so we either round up or down.')
 #create resample pool and samples then concatenate samples and original
 toResample = churnTrain.loc[churnTrain['Churn']==True]
-ourResample = toResample.sample(n=int(x), replace = True)
+ourResample = toResample.sample(n=int(numToResample), replace = True)
 churnTrainRebal = pd.concat([churnTrain, ourResample])
 
 #3. Create  a  CART  model  using  the  training  set  with  the Churntarget  variable  and
@@ -93,15 +94,40 @@ churnTrainRebal = pd.concat([churnTrain, ourResample])
 #   Compare the confusion tables and accuracies of the 3 different models.
 
 y = churnTrainRebal['Churn'].to_numpy()
+yTest = churnTest['Churn'].to_numpy()
 #drop the Churn col from the dataset to obtain X
+
 X = churnTrainRebal.drop('Churn',axis=1)
-#drop all categorical cols so we can replace them with dummy vals
+XTest = churnTest.drop('Churn',axis=1)
+#drop all categorical cols so we can replace them with dummy vals if we want
 toDrop = ['State', 'Phone', 'Intl Plan', 'VMail Plan','Old Churn']
 X.drop(toDrop, axis=1, inplace=True)
+XTest.drop(toDrop, axis=1, inplace=True)
 xNames = X.columns.values
 yNames = ['True','False']
 cart01 = DecisionTreeClassifier(criterion="gini",max_leaf_nodes=2).fit(X,y)
 export_graphviz(cart01, out_file='cart01.dot', feature_names=xNames, class_names=yNames)
-#only difference is max_leaf_nodes
-cart02 = DecisionTreeClassifier(criterion="gini",max_leaf_nodes=10).fit(X,y)
+cart02 = DecisionTreeClassifier(criterion="gini",max_leaf_nodes=5).fit(X,y)
 export_graphviz(cart02, out_file='cart02.dot', feature_names=xNames, class_names=yNames)
+cart03 = DecisionTreeClassifier(criterion="gini",max_leaf_nodes=10).fit(X,y)
+export_graphviz(cart02, out_file='cart03.dot', feature_names=xNames, class_names=yNames)
+#only difference is max_leaf_nodes
+#lets collect our predictions
+predCart01 = cart01.predict(XTest)
+predCart02 = cart02.predict(XTest)
+predCart03 = cart03.predict(XTest)
+cm01 = confusion_matrix(yTest,predCart01)
+cm02 = confusion_matrix(yTest,predCart02)
+cm03 = confusion_matrix(yTest,predCart03)
+print('\nConfusion matrices and accuracies')
+print('cm01:\n',cm01)
+print('Accuracy: ',accuracy_score(yTest,predCart01))
+print('cm02:\n',cm02)
+print('Accuracy: ',accuracy_score(yTest,predCart02))
+print('cm03:\n',cm03)
+print('Accuracy: ',accuracy_score(yTest,predCart03))
+
+#4. Create a C5.0 model using the training set with the Churntarget variable and
+#   whatever predictor variables you think  appropriate. Try at least 3 different models.
+#   Compare the confusion tables and accuracies of the 3 different models.
+#   How does C5.0 compare in performance to CART? 
